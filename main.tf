@@ -24,6 +24,7 @@ module "cloudfront" {
   source             = "./modules/cloudfront"
   site_name          = var.site_name
   site_domain        = var.site_domain
+  site_prefix        = var.site_prefix
   cloudfront_ssl     = aws_acm_certificate.wordpress_site.arn
   cloudfront_aliases = var.cloudfront_aliases
   providers = {
@@ -31,7 +32,7 @@ module "cloudfront" {
   }
   depends_on = [aws_acm_certificate_validation.wordpress_site,
   module.waf]
-  
+
   cloudfront_class                  = var.cloudfront_class
   waf_acl_arn                       = var.waf_enabled ? module.waf[0].waf_acl_arn : null
   cloudfront_function_301_redirects = var.cloudfront_function_301_redirects
