@@ -5,13 +5,17 @@ ARG ecr_repo_name
 FROM php:7.4 as compile
 
 ARG wp2static_version
+ARG wp2static_s3_addon_version
 
 WORKDIR /deps
+
 RUN apt-get update && \
     apt-get install --no-install-recommends -y wget zip unzip && \
     rm -fr /var/lib/apt/lists/*
+
 RUN wget https://raw.githubusercontent.com/composer/getcomposer.org/main/web/installer -O - -q | php -- --quiet && \
     mv /deps/composer.phar /usr/local/bin/composer
+
 RUN curl -Lf https://github.com/WP2Static/wp2static/archive/refs/tags/${wp2static_version}.zip -o /deps/serverless-wordpress-wp2static.zip && \
     unzip /deps/serverless-wordpress-wp2static.zip && \
     cd /deps/wp2static-${wp2static_version} && \
@@ -19,13 +23,18 @@ RUN curl -Lf https://github.com/WP2Static/wp2static/archive/refs/tags/${wp2stati
     composer build serverless-wordpress-wp2static && \
     mv $HOME/Downloads/serverless-wordpress-wp2static.zip /deps/serverless-wordpress-wp2static.zip
 
+RUN curl -Lf https://github.com/leonstafford/wp2static-addon-s3/archive/refs/tags/${wp2static_s3_addon_version}.zip -o /deps/serverless-wordpress-s3-addon.zip && \
+    unzip /deps/serverless-wordpress-s3-addon.zip && \
+    cd /deps/wp2static-addon-s3-${wp2static_s3_addon_version} && \
+    composer install && \
+    composer build serverless-wordpress-s3-addon && \
+    mv $HOME/Downloads/serverless-wordpress-s3-addon.zip /deps/serverless-wordpress-s3-addon.zip
+
 ARG aws_account_id
 ARG aws_region
 ARG ecr_repo_name
 
 FROM ${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com/${ecr_repo_name}:base as wordpress
-
-ARG wp2static_s3_addon_version
 
 COPY ["wp-cli.phar", "/tmp/"]
 COPY docker-entrypoint.sh /usr/local/bin/
@@ -33,7 +42,7 @@ RUN apt-get update && apt-get install -y sudo jq awscli mariadb-client && chmod 
 && rm -rf /var/lib/apt/lists/*
 
 COPY --from=compile /deps/serverless-wordpress-wp2static.zip /tmp/serverless-wordpress-wp2static.zip
-RUN curl -Lf https://github.com/leonstafford/wp2static-addon-s3/archive/refs/tags/${wp2static_s3_addon_version}.zip -o /tmp/serverless-wordpress-s3-addon.zip
+COPY --from=compile /deps/serverless-wordpress-s3-addon.zip /tmp/serverless-wordpress-s3-addon.zip
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY ["php.ini", "$PHP_INI_DIR/conf.d/"]
