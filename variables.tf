@@ -104,6 +104,12 @@ variable "cloudfront_class" {
   default     = "PriceClass_All"
 }
 
+variable "cloudfront_function_override" {
+  type        = string
+  default     = null
+  description = "An override for the redirect CloudFront function"
+}
+
 variable "cloudfront_function_301_redirects" {
   type = map(any)
   default = {

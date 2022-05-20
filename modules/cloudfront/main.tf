@@ -15,7 +15,7 @@ resource "aws_cloudfront_function" "object_rewrite" {
   name    = "${var.site_name}_rewrite"
   runtime = "cloudfront-js-1.0"
   publish = true
-  code = templatefile(
+  code = var.cloudfront_function_override != null ? var.cloudfront_function_override : templatefile(
     "${path.module}/function_rewrite/index.js.tftpl",
     {
       REDIRECTS = var.cloudfront_function_301_redirects

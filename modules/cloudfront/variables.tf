@@ -37,6 +37,12 @@ variable "waf_acl_arn" {
   description = "The ARN of the WAF ACL applied to the CloudFront distribution."
 }
 
+variable "cloudfront_function_override" {
+  type        = string
+  default     = null
+  description = "An override for the redirect CloudFront function"
+}
+
 variable "cloudfront_function_301_redirects" {
   type = map(any)
   default = {

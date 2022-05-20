@@ -35,6 +35,7 @@ module "cloudfront" {
 
   cloudfront_class                  = var.cloudfront_class
   waf_acl_arn                       = var.waf_enabled ? module.waf[0].waf_acl_arn : null
+  cloudfront_function_override      = var.cloudfront_function_override
   cloudfront_function_301_redirects = var.cloudfront_function_301_redirects
 }
 
